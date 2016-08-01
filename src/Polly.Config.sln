@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Net40", "Polly.Config.Net40\Polly.Config.Net40.csproj", "{097B6CE3-84C0-4A85-91CA-A721BB233803}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Net40Async", "Polly.Config.Net40Async\Polly.Config.Net40Async.csproj", "{0B2A6765-9D6D-4918-9AA8-E0D27FA8F99B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Net45", "Polly.Config.Net45\Polly.Config.Net45.csproj", "{7AADDA3F-B8A6-453A-86AD-8AFF491FB688}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Pcl", "Polly.Config.Pcl\Polly.Config.Pcl.csproj", "{E90CCA12-51D7-45A1-86DB-03688E1D05AE}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Polly.Config.Shared", "Polly.Config.Shared\Polly.Config.Shared.shproj", "{9C4F79AE-C2EB-4278-8080-CD7741018FA8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Polly.Config.SharedSpecs", "Polly.Config.SharedSpecs\Polly.Config.SharedSpecs.shproj", "{5F97866A-AF6C-4148-88B5-DE9C81F7D082}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Pcl.Specs", "Polly.Config.Pcl.Specs\Polly.Config.Pcl.Specs.csproj", "{3C514574-2A27-40B3-A6EF-36A0CF40EB42}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Polly.Config.Shared\Polly.Config.Shared.projitems*{097b6ce3-84c0-4a85-91ca-a721bb233803}*SharedItemsImports = 4
+		Polly.Config.SharedSpecs\Polly.Config.SharedSpecs.projitems*{3c514574-2a27-40b3-a6ef-36a0cf40eb42}*SharedItemsImports = 4
+		Polly.Config.SharedSpecs\Polly.Config.SharedSpecs.projitems*{5f97866a-af6c-4148-88b5-de9c81f7d082}*SharedItemsImports = 13
+		Polly.Config.Shared\Polly.Config.Shared.projitems*{7aadda3f-b8a6-453a-86ad-8aff491fb688}*SharedItemsImports = 4
+		Polly.Config.Shared\Polly.Config.Shared.projitems*{9c4f79ae-c2eb-4278-8080-cd7741018fa8}*SharedItemsImports = 13
+		Polly.Config.Shared\Polly.Config.Shared.projitems*{e90cca12-51d7-45a1-86db-03688e1d05ae}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{097B6CE3-84C0-4A85-91CA-A721BB233803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{097B6CE3-84C0-4A85-91CA-A721BB233803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{097B6CE3-84C0-4A85-91CA-A721BB233803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{097B6CE3-84C0-4A85-91CA-A721BB233803}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B2A6765-9D6D-4918-9AA8-E0D27FA8F99B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B2A6765-9D6D-4918-9AA8-E0D27FA8F99B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B2A6765-9D6D-4918-9AA8-E0D27FA8F99B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B2A6765-9D6D-4918-9AA8-E0D27FA8F99B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AADDA3F-B8A6-453A-86AD-8AFF491FB688}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AADDA3F-B8A6-453A-86AD-8AFF491FB688}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AADDA3F-B8A6-453A-86AD-8AFF491FB688}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AADDA3F-B8A6-453A-86AD-8AFF491FB688}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E90CCA12-51D7-45A1-86DB-03688E1D05AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E90CCA12-51D7-45A1-86DB-03688E1D05AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E90CCA12-51D7-45A1-86DB-03688E1D05AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E90CCA12-51D7-45A1-86DB-03688E1D05AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C514574-2A27-40B3-A6EF-36A0CF40EB42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C514574-2A27-40B3-A6EF-36A0CF40EB42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C514574-2A27-40B3-A6EF-36A0CF40EB42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C514574-2A27-40B3-A6EF-36A0CF40EB42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

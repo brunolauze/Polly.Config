@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>9c4f79ae-c2eb-4278-8080-cd7741018fa8</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Polly.Config.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyElementCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyItemElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyItemElementCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyRegistry.Core.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolicyRegistry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PollyConfigurationSection.cs" />
+  </ItemGroup>
+</Project>
