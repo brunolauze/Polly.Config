@@ -48,9 +48,20 @@ namespace Polly.Configuration
                         return CreatePolicy(item, item.Key);
                     }
                 }
-
             }
             return null; // TODO: REVIEW: PolicyNotFoundException
+        }
+
+        private static int GetOrder(IConfigurationSection section)
+        {
+            var orderStr = section["order"];
+            if (string.IsNullOrEmpty(orderStr)) return 0;
+            int order;
+            if (int.TryParse(orderStr, out order))
+            {
+                return order;
+            }
+            return 0;
         }
 
         /// <summary>
@@ -69,8 +80,52 @@ namespace Polly.Configuration
         /// </exception>
         private static Policy CreatePolicy(Microsoft.Extensions.Configuration.IConfigurationSection policySection, string key)
         {
-            Policy policy = null;
-            foreach(var item in policySection.GetChildren())
+            Policy policy                                              = null;
+            var sections = policySection.GetChildren().OrderBy(GetOrder);
+            foreach (var item in sections)
+            {
+                string type = null;
+                string exceptionTypeStr = null;
+                string retryCountStr = null;
+                string timeoutInSecondsStr = null;
+                string timeoutInMillisecondsStr = null;
+                string maxParallelizationStr = null;
+                string maxQueuedActionsStr = null;
+                string cacheProviderStr = null;
+                foreach (var el in item.GetChildren())
+                {
+                    if (el.Key == "type") type = el.Value;
+                    else if (el.Key == "exceptionType") exceptionTypeStr = el.Value;
+                    else if (el.Key == "retryCount") retryCountStr = el.Value;
+                    else if (el.Key == "timeoutInSeconds") timeoutInSecondsStr = el.Value;
+                    else if (el.Key == "timeoutInMilliseconds") timeoutInMillisecondsStr = el.Value;
+                    else if (el.Key == "maxParallelization") maxParallelizationStr = el.Value;
+                    else if (el.Key == "maxQueuedActions") maxQueuedActionsStr = el.Value;
+                    else if (el.Key == "cacheProvider") cacheProviderStr = el.Value;
+                    
+                }
+                if (string.IsNullOrEmpty(type)) type = item.Key.ToLowerInvariant();
+
+                switch (type)
+                {
+                    case "handle":
+                        policy = ProcessHandle(exceptionTypeStr, policy, key);
+                        break;
+                    case "handleresult":
+                        break;
+                    case "timeout":
+                        policy = ProcessTimeout(timeoutInSecondsStr, timeoutInMillisecondsStr, policy, key);
+                        break;
+                    case "throttle":
+                        policy = ProcessThrottle(maxParallelizationStr, maxQueuedActionsStr, policy, key);
+                        break;
+                    case "caching":
+                        policy = ProcessCaching(cacheProviderStr, policy, key);
+                        break;
+                }
+            }
+            
+            foreach (var item in sections)
             {
                 string type = null;
                 string exceptionTypeStr = null;
@@ -82,7 +137,14 @@ namespace Polly.Configuration
                 string cacheProviderStr = null;
                 string valueStr = null;
                 string valueType = null;
-                foreach(var el in item.GetChildren())
+                string exceptionsAllowedBeforeBreakingStr = null;
+                string durationOfBreakInSecondsStr = null;
+                string durationOfBreakInMillisecondsStr = null;
+                string failureThresholdStr = null;
+                string samplingDurationInSecondsStr = null;
+                string samplingDurationInMillisecondsStr = null;
+                string minimumThroughputStr = null;
+                foreach (var el in item.GetChildren())
                 {
                     if (el.Key == "type") type = el.Value;
                     else if (el.Key == "exceptionType") exceptionTypeStr = el.Value;
@@ -94,30 +156,35 @@ namespace Polly.Configuration
                     else if (el.Key == "value") valueStr = el.Value;
                     else if (el.Key == "valueType") valueType = el.Value;
                     else if (el.Key == "cacheProvider") cacheProviderStr = el.Value;
+                    else if (el.Key == "exceptionsAllowedBeforeBreaking") exceptionsAllowedBeforeBreakingStr = el.Value;
+                    else if (el.Key == "durationOfBreakInSeconds") durationOfBreakInSecondsStr = el.Value;
+                    else if (el.Key == "durationOfBreakInMilliseconds") durationOfBreakInMillisecondsStr = el.Value;
+                    else if (el.Key == "failureThreshold") failureThresholdStr = el.Value;
+                    else if (el.Key == "samplingDurationInSeconds") samplingDurationInSecondsStr = el.Value;
+                    else if (el.Key == "samplingDurationInMilliseconds") samplingDurationInMillisecondsStr = el.Value;
+                    else if (el.Key == "minimumThroughput") minimumThroughputStr = el.Value;
                 }
-
                 if (string.IsNullOrEmpty(type)) type = item.Key.ToLowerInvariant();
-        
+                
                 switch(type)
                 {
                     case "handle":
-                        policy = ProcessHandle(exceptionTypeStr, policy, key);
+                        break;
+                    case "handleresult":
+                        break;
+                    case "timeout":
+                        break;
+                    case "throttle":
+                        break;
+                    case "caching":
                         break;
                     case "thenhandle":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with thenhandle type");
                         policy = ProcessThenHandle(exceptionTypeStr, policy, key);
                         break;
-                    case "handleresult":
-                        break;
                     case "fallback":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with fallback type");
                         policy = ProcessFallback(valueStr, valueType, policy, key);
-                        break;
-                    case "timeout":
-                        policy = ProcessTimeout(timeoutInSecondsStr, timeoutInMillisecondsStr, policy, key);
-                        break;
-                    case "throttle":
-                        policy = ProcessThrottle(maxParallelizationStr, maxQueuedActionsStr, policy, key);
                         break;
                     case "retry":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with retry type");
@@ -125,10 +192,18 @@ namespace Polly.Configuration
                         break;
                     case "circuitbreaker":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with circuitbreaker type");
-                        policy = ProcessCircuitBreaker(null, policy, key);
-                        break;
-                    case "caching":
-                        policy = ProcessCaching(cacheProviderStr, policy, key);
+                        if (string.IsNullOrEmpty(exceptionsAllowedBeforeBreakingStr))
+                        {
+                            if (string.IsNullOrEmpty(failureThresholdStr))
+                            {
+                                throw new NullReferenceException($"exceptionsAllowedBeforeBreaking or failureThreshold are required with circuitbreaker policy item {key}");
+                            }
+                            policy = ProcessCircuitBreaker(failureThresholdStr, samplingDurationInSecondsStr, samplingDurationInMillisecondsStr, minimumThroughputStr, durationOfBreakInSecondsStr, durationOfBreakInMillisecondsStr, policy, key);
+                        }
+                        else
+                        {
+                            policy = ProcessCircuitBreaker(exceptionsAllowedBeforeBreakingStr, durationOfBreakInSecondsStr, durationOfBreakInMillisecondsStr, policy, key);
+                        }
                         break;
                     case "custom":
                         throw new NotImplementedException();
@@ -139,10 +214,82 @@ namespace Polly.Configuration
             return policy;
         }
 
-
-        private static Policy ProcessCircuitBreaker(string dummy, Policy policy, string key)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="failureThresholdStr"></param>
+        /// <param name="samplingDurationInSecondsStr"></param>
+        /// <param name="samplingDurationInMillisecondsStr"></param>
+        /// <param name="minimumThroughputStr"></param>
+        /// <param name="durationOfBreakInSecondsStr"></param>
+        /// <param name="durationOfBreakInMillisecondsStr"></param>
+        /// <param name="policy"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static Policy ProcessCircuitBreaker(string failureThresholdStr, string samplingDurationInSecondsStr, string samplingDurationInMillisecondsStr, string minimumThroughputStr, string durationOfBreakInSecondsStr, string durationOfBreakInMillisecondsStr, Policy policy, string key)
         {
-            throw new NotImplementedException();
+            int failureThreshold;
+            if (int.TryParse(failureThresholdStr, out failureThreshold))
+            {
+                TimeSpan samplingDuration = TimeSpan.MaxValue;
+                int samplingDurationInSeconds;
+                int samplingDurationInMilliseconds;
+                if (int.TryParse(durationOfBreakInSecondsStr, out samplingDurationInSeconds))
+                {
+                    samplingDuration = TimeSpan.FromSeconds(samplingDurationInSeconds);
+                }
+                else if (int.TryParse(durationOfBreakInMillisecondsStr, out samplingDurationInMilliseconds))
+                {
+                    samplingDuration = TimeSpan.FromSeconds(samplingDurationInMilliseconds);
+                }
+
+                TimeSpan durationOfBreak = TimeSpan.MaxValue;
+                int durationOfBreakInSeconds;
+                int durationOfBreakInMilliseconds;
+                if (int.TryParse(durationOfBreakInSecondsStr, out durationOfBreakInSeconds))
+                {
+                    durationOfBreak = TimeSpan.FromSeconds(durationOfBreakInSeconds);
+                }
+                else if (int.TryParse(durationOfBreakInMillisecondsStr, out durationOfBreakInMilliseconds))
+                {
+                    durationOfBreak = TimeSpan.FromSeconds(durationOfBreakInMilliseconds);
+                }
+
+                int minimumThroughput = 1;
+                int.TryParse(minimumThroughputStr, out minimumThroughput);
+                return policy.CircuitBreaker(failureThreshold, samplingDuration, minimumThroughput, durationOfBreak);
+            }
+            throw new NullReferenceException($"exceptionsAllowedBeforeBreaking or failureThreshold are required with circuitbreaker policy item {key}");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="exceptionsAllowedBeforeBreakingStr"></param>
+        /// <param name="durationOfBreakInSecondsStr"></param>
+        /// <param name="durationOfBreakInMillisecondsStr"></param>
+        /// <param name="policy"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static Policy ProcessCircuitBreaker(string exceptionsAllowedBeforeBreakingStr, string durationOfBreakInSecondsStr, string durationOfBreakInMillisecondsStr, Policy policy, string key)
+        {
+            int exceptionsAllowedBeforeBreaking;
+            if (int.TryParse(exceptionsAllowedBeforeBreakingStr, out exceptionsAllowedBeforeBreaking))
+            {
+                TimeSpan durationOfBreak = TimeSpan.MaxValue;
+                int durationOfBreakInSeconds;
+                int durationOfBreakInMilliseconds;
+                if (int.TryParse(durationOfBreakInSecondsStr, out durationOfBreakInSeconds))
+                {
+                    durationOfBreak = TimeSpan.FromSeconds(durationOfBreakInSeconds);
+                }
+                else if (int.TryParse(durationOfBreakInMillisecondsStr, out durationOfBreakInMilliseconds))
+                {
+                    durationOfBreak = TimeSpan.FromSeconds(durationOfBreakInMilliseconds);
+                }
+                return durationOfBreak == TimeSpan.MaxValue ? policy.CircuitBreaker(exceptionsAllowedBeforeBreaking) : policy.CircuitBreaker(exceptionsAllowedBeforeBreaking, durationOfBreak);
+            }
+            throw new NullReferenceException($"exceptionsAllowedBeforeBreaking is missing for circuit breaker policy {key}");
         }
         
         /// <summary>

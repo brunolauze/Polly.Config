@@ -65,6 +65,45 @@ namespace Polly.Configuration.Specs
             actual.GetType().Name.Should().Be("RetryPolicy");
         }
 
+        [Fact]
+        public void Should_resolve_simple_circuit_breaker()
+        {
+            string name = "SimpleCircuitBreaker";
+
+            var dic = new Dictionary<string, string>
+            {
+                {"Polly:SimpleCircuitBreaker:Handle:order", "1" },
+                {"Polly:SimpleCircuitBreaker:Handle:exceptionType", "System.Exception"},
+                {"Polly:SimpleCircuitBreaker:CircuitBreaker:order", "2" },
+                {"Polly:SimpleCircuitBreaker:CircuitBreaker:exceptionsAllowedBeforeBreaking", "3"},
+                {"Polly:SimpleCircuitBreaker:CircuitBreaker:durationOfBreakInSeconds", "3"},
+            };
+
+            /* JSON would be: */
+            /*
+            "polly": {
+                "SimpleRetry": {
+                    "Handle": {
+                        "exceptionType": "System.Exception"
+                    },
+                    "CircuitBreaker": {
+                        "exceptionsAllowedBeforeBreaking": 3,
+                        "durationOfBreakInSeconds": 3
+                    }
+                }
+            }
+            */
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            IConfigurationRoot configuration = configurationBuilder.Build();
+
+
+            var actual = PolicyRegistry.Resolve(name, configuration);
+            actual.GetType().Name.Should().Be("CircuitBreakerPolicy");
+            actual.AsCircuitBreaker().CircuitState.Should().Be(CircuitBreaker.CircuitState.Closed);
+        }
+
         internal class PollyConfig
         {
             public IEnumerable<PolicyItem> Policies { get; set; }

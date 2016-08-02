@@ -17,6 +17,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Polly.Config.SharedSpecs", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polly.Config.Pcl.Specs", "Polly.Config.Pcl.Specs\Polly.Config.Pcl.Specs.csproj", "{3C514574-2A27-40B3-A6EF-36A0CF40EB42}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C0E7359F-E48D-4972-8E6B-2FB693236AD2}"
+	ProjectSection(SolutionItems) = preProject
+		Polly.Config.Net40Async.nuspec = Polly.Config.Net40Async.nuspec
+		Polly.Config.nuspec = Polly.Config.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Polly.Config.Shared\Polly.Config.Shared.projitems*{097b6ce3-84c0-4a85-91ca-a721bb233803}*SharedItemsImports = 4

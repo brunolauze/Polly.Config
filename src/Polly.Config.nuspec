@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <owners>App vNext</owners>
+    <authors>Michael Wolfenden, App vNext</authors>
+    <description>
+      Polly.Config is a 4.0 / 4.5 / PCL library (Profile 259) that allows developers to resolve transient exception and fault handling policies such as Retry, Retry Forever, Wait and Retry or Circuit Breaker in a fluent manner.
+    </description>
+    <language>en-US</language>
+    <licenseUrl>https://raw.github.com/App-vNext/Polly/master/LICENSE.txt</licenseUrl>
+    <iconUrl>https://raw.github.com/App-vNext/Polly/master/Polly.png</iconUrl>
+    <projectUrl>https://github.com/App-vNext/Polly</projectUrl>
+    <tags>Exception Handling Policy Retry Wait Circuit Breaker</tags>
+    <copyright>Copyright © 2016, App vNext</copyright>
+    <releaseNotes>
+     4.3.0
+     ---------------------
+     - Added ability for policies to handle return results.  Optimised circuit-breaker hot path.  Fixed circuit-breaker threshold bug.  
+     
+     4.2.4
+     ---------------------
+     - Added overloads to WaitAndRetry and WaitAndRetryAsync methods that accept an onRetry delegate which includes the attempt count.
+     
+     4.2.3
+     ---------------------
+     - Cleaned up new Polly.Net40Async NuGet package, removing Polly.dll and unused framework folders.
+     
+     4.2.2
+     ---------------------
+     - Add new Polly.Net40Async project supporting async for .NET40 via Microsoft.Bcl.Async.  This is available as separate Nuget packages Polly.Net40Async and Polly.Net40Async-signed.
+
+     4.2.1
+     ---------------------
+     - Allowed async onRetry delegates to async retry policies.
+
+     4.2.0
+     ---------------------
+     - Added AdvancedCircuitBreaker - Thanks to @reisenberger and @kristianhald
+     
+     4.1.2
+     ---------------------
+     - Fixed an issue with the onReset delegate of the CircuitBreaker.
+     
+     4.1.1
+     ---------------------
+     - Add ExecuteAndCapture support with arbitrary context data - Thanks to @reisenberger
+     
+     4.1.0 
+     --------------------- 
+     - Add Wait and retry forever policy - Thanks to @nedstoyanov 
+     - Remove time-limit on CircuitBreaker state-change delegates - Thanks to @reisenberger 
+     
+     4.0.0 
+     --------------------- 
+     - Add async support and circuit-breaker support for ContextualPolicy 
+     - Add manual control of circuit-breaker (reset and manual circuit isolation) 
+     - Add public reporting of circuit-breaker state, for health/performance monitoring 
+     - Add delegates on changes of circuit state - Thanks to @reisenberger 
+     
+     3.0.0 
+     --------------------- 
+     - Add cancellation support for all async Policy execution - Thanks to @reisenberger 
+     
+     2.2.7 
+     --------------------- 
+     - Fixes an issue where continueOnCapturedContext needed to be specified in two places (on action execution and Policy configuration), when wanting to flow async action execution on the captured context - Thanks to @reisenberger 
+     - Fixes excess line ending issues 
+     
+     2.2.6 
+     --------------------- 
+     - Async sleep fix, plus added continueOnCapturedContext parameter on async methods to control whether continuation and retry will run on captured synchronization context - Thanks to @yevhen 
+     
+     2.2.5
+     ---------------------
+     - Policies with a retry count of zero are now allowed
+     
+     2.2.4
+     ---------------------
+     - Add .NET Core support
+     
+     2.2.3
+     ---------------------
+     - Fix PCL implementation of `SystemClock.Reset`
+     - Added ability to capture the results of executing a policy via `ExecuteAndCapture`
+     
+     2.2.2
+     ---------------------
+     - Added extra `NotOnCapturedContext` call to prevent potential deadlocks when blocking on asynchronous calls
+     
+     2.2.1
+     ---------------------
+     - Replaced non-blocking sleep implementation with a blocking one for PCL
+     
+     2.2.0
+     ---------------------
+     - Added Async Support (PCL)
+     - PCL Profile updated from Profile78 -&gt;  Profile 259
+     - Added missing WaitAndRetryAsync overload
+     
+     2.1.0
+     ---------------------
+     - Added Async Support (.NET Framework 4.5 Only)
+     
+     2.0.0
+     ---------------------
+     - Added Portable Class Library
+     - The "Polly" NuGet package is now no longer strongly named. The strongly named NuGet package is now "Polly-Signed"
+     
+     1.1.0
+     ---------------------
+     - Added additional overloads to Retry
+     - Allow arbitrary data to be passed to policy execution
+   </releaseNotes>
+    <dependencies>
+      <group targetFramework="net" />
+      <group targetFramework="win" />
+      <group targetFramework="wp" />
+      <group targetFramework="wpa" />
+      <group targetFramework="MonoAndroid" />
+      <group targetFramework="MonoTouch" />
+      <group targetFramework="Xamarin.iOS" />
+      <group targetFramework="portable-net45+win8+wpa81+wp8" />
+      <group targetFramework="dotnet">
+        <dependency id="System.Reflection" version="4.0.0" />
+        <dependency id="System.Collections" version="4.0.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.0.0" />
+        <dependency id="System.Linq" version="4.0.0" />
+        <dependency id="System.Runtime" version="4.0.0" />
+        <dependency id="System.Runtime.Extensions" version="4.0.0" />
+        <dependency id="System.Threading" version="4.0.0" />
+        <dependency id="System.Threading.Tasks" version="4.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" exclude="**\*.unsigned" />
+  </files>
+</package>

@@ -24,9 +24,9 @@ using System.Text.Json;
 // GLOBAL VARIABLES
 ///////////////////////////////////////////////////////////////////////////////
 
-var projectName = "Polly";
-var net40AsyncProjectName = "Polly.Net40Async";
-var keyName = "Polly.snk";
+var projectName = "Polly.Config";
+var net40AsyncProjectName = "Polly.Config.Net40Async";
+var keyName = "Polly.Config.snk";
 
 var solutions = GetFiles("./**/*.sln");
 var solutionPaths = solutions.Select(solution => solution.GetDirectory());
@@ -71,12 +71,12 @@ var strongNameSignerPath = ToolsExePath("StrongNameSigner.Console.exe");
 Setup(() =>
 {
     Information("");
-    Information(" ██████╗  ██████╗ ██╗     ██╗  ██╗   ██╗");
-    Information(" ██╔══██╗██╔═══██╗██║     ██║  ╚██╗ ██╔╝");
-    Information(" ██████╔╝██║   ██║██║     ██║   ╚████╔╝ ");
-    Information(" ██╔═══╝ ██║   ██║██║     ██║    ╚██╔╝  ");
-    Information(" ██║     ╚██████╔╝███████╗███████╗██║   ");
-    Information(" ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚═╝   ");
+    Information(" ██████╗  ██████╗ ██╗     ██╗  ██╗   ██╗     ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗  "); 
+    Information(" ██╔══██╗██╔═══██╗██║     ██║  ╚██╗ ██╔╝    ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝  ");
+    Information(" ██████╔╝██║   ██║██║     ██║   ╚████╔╝     ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗ ");
+    Information(" ██╔═══╝ ██║   ██║██║     ██║    ╚██╔╝      ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║ ");
+    Information(" ██║     ╚██████╔╝███████╗███████╗██║       ╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝ ");
+    Information(" ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚═╝        ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝  ");
     Information("");
 });
 
