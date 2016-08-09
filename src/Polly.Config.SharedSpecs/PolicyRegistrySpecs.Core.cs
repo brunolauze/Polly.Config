@@ -84,9 +84,11 @@ namespace Polly.Configuration.Specs
             "polly": {
                 "SimpleRetry": {
                     "Handle": {
+                        "order": 1,
                         "exceptionType": "System.Exception"
                     },
                     "CircuitBreaker": {
+                        "order": 2,
                         "exceptionsAllowedBeforeBreaking": 3,
                         "durationOfBreakInSeconds": 3
                     }

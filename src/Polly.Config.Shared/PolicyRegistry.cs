@@ -26,6 +26,9 @@ namespace Polly.Configuration
     /// </summary>
     public static partial class PolicyRegistry
     {
+        private static readonly Dictionary<string, Policy> _policies = new Dictionary<string, Policy>();
+        private static readonly object _lock = new object();
+
 #if !PORTABLE
         /// <summary>
         /// Resolves the specified name.
@@ -36,6 +39,9 @@ namespace Polly.Configuration
         public static Policy Resolve(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+
+            if (_policies.ContainsKey(name)) return _policies[name];
+
             var section = (PollyConfigurationSection)ConfigurationManager.GetSection(PollyConfigurationSection.SectionName);
             if (section != null)
             {
@@ -43,12 +49,50 @@ namespace Polly.Configuration
                 {
                     if (policyDef.Key.Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
-                        return CreatePolicy(policyDef);
+                        var policy = CreatePolicy(policyDef);
+                        lock(_lock)
+                        {
+                            if (!_policies.ContainsKey(name))
+                            {
+                                _policies.Add(name, policy);
+                            }
+                        }
+                        return policy;
                     }
                 }
             }
             return null; // TODO: REVIEW: PolicyNotFoundException
         }
+
+        /// <summary>
+        /// Resolves the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>Policy.</returns>
+        public static IEnumerable<Policy> ResolveAll()
+        {
+            var section = (PollyConfigurationSection)ConfigurationManager.GetSection(PollyConfigurationSection.SectionName);
+            if (section != null)
+            {
+                foreach(PolicyElement policyDef in section.Policies)
+                {
+                    if (!_policies.ContainsKey(policyDef.Key))
+                    {
+                        var policy = CreatePolicy(policyDef);
+                        lock(_lock)
+                        {
+                            if (!_policies.ContainsKey(policyDef.Key))
+                            {
+                                _policies.Add(policyDef.Key, policy);
+                            }
+                        }
+                    }
+                }
+            }
+            return _policies.Values; // TODO: REVIEW: PolicyNotFoundException
+        }
+
+
 
         /// <summary>
         /// Creates the policy.
@@ -101,13 +145,54 @@ namespace Polly.Configuration
                     case "caching":
                         policy = ProcessCaching(item, policy);
                         break;
+                    case "latency":
+                        policy = ProcessLatency(item, policy);
+                        break;
                     case "custom":
-                        throw new NotImplementedException();
+                        policy = ProcessCustom(item, policy);
+                        break;
                     default:
                         throw new InvalidOperationException(); //TODO: Invalid Policy Type Exception
                 }
             }
             return policy;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        private static Policy ProcessLatency(PolicyItemElement item, Policy policy)
+        {
+            if (!item.Attributes.ContainsKey("timeInMilliseconds")) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {item.Key}");
+            if (!item.Attributes.ContainsKey("numberOfBuckets")) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {item.Key}");
+            if (!item.Attributes.ContainsKey("bucketDataLength")) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {item.Key}");
+            var timeInMillisecondsStr = item.Attributes["timeInMilliseconds"];
+            var numberOfBucketsStr = item.Attributes["numberOfBuckets"];
+            var bucketDataLengthStr = item.Attributes["bucketDataLength"];
+            int timeInMilliseconds;
+            int numberOfBuckets;
+            int bucketDataLength;
+            if (!int.TryParse(timeInMillisecondsStr, out timeInMilliseconds)) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {item.Key}");
+            if (!int.TryParse(numberOfBucketsStr, out numberOfBuckets)) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {item.Key}");
+            if (!int.TryParse(bucketDataLengthStr, out bucketDataLength)) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {item.Key}");
+            if (policy == null) return Policy.Latency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
+            return policy.ThenLatency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        private static Policy ProcessCustom(PolicyItemElement item, Policy policy)
+        {
+            if (!item.Attributes.ContainsKey("policyType")) throw new NullReferenceException($"policyType is missing for custom policy item {item.Key}");
+            var policyType = Type.GetType(item.Attributes["policyType"]);
+            return policy.Wrap((Policy)Activator.CreateInstance(policyType, new object[] { item.Attributes }));
         }
 
         /// <summary>

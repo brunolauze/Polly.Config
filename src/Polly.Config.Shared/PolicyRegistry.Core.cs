@@ -28,6 +28,33 @@ namespace Polly.Configuration
     public static partial class PolicyRegistry
     {
 #if PORTABLE
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IEnumerable<Policy> ResolveAll(IConfigurationRoot configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            var section = configuration.GetSection("polly");
+            if (section != null)
+            {
+                foreach (var item in section.GetChildren())
+                {
+                    var policy = CreatePolicy(item, item.Key);
+                    lock (_lock)
+                    {
+                        if (!_policies.ContainsKey(item.Key))
+                        {
+                            _policies.Add(item.Key, policy);
+                        }
+                    }
+                }
+            }
+            return _policies.Values.ToList();
+        }
+
         /// <summary>
         /// Resolves the specified name.
         /// </summary>
@@ -37,6 +64,7 @@ namespace Polly.Configuration
         public static Policy Resolve(string name, Microsoft.Extensions.Configuration.IConfigurationRoot configuration)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (_policies.ContainsKey(name)) return _policies[name];
             if (configuration == null) throw new ArgumentNullException("configuration");
             var section = configuration.GetSection("polly");
             if (section != null)
@@ -45,7 +73,12 @@ namespace Polly.Configuration
                 {
                     if (item.Key.Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
-                        return CreatePolicy(item, item.Key);
+                        var policy = CreatePolicy(item, item.Key);
+                        lock(_lock)
+                        {
+                            _policies.Add(name, policy);
+                        }
+                        return policy;
                     }
                 }
             }
@@ -144,6 +177,11 @@ namespace Polly.Configuration
                 string samplingDurationInSecondsStr = null;
                 string samplingDurationInMillisecondsStr = null;
                 string minimumThroughputStr = null;
+                string policyTypeStr = null;
+                string timeInMillisecondsStr = null;
+                string numberOfBucketsStr = null;
+                string bucketDataLengthStr = null;
+                var attributes = new Dictionary<string, string>();
                 foreach (var el in item.GetChildren())
                 {
                     if (el.Key == "type") type = el.Value;
@@ -163,6 +201,11 @@ namespace Polly.Configuration
                     else if (el.Key == "samplingDurationInSeconds") samplingDurationInSecondsStr = el.Value;
                     else if (el.Key == "samplingDurationInMilliseconds") samplingDurationInMillisecondsStr = el.Value;
                     else if (el.Key == "minimumThroughput") minimumThroughputStr = el.Value;
+                    else if (el.Key == "timeInMilliseconds") timeInMillisecondsStr = el.Value;
+                    else if (el.Key == "numberOfBuckets") numberOfBucketsStr = el.Value;
+                    else if (el.Key == "bucketDataLength") bucketDataLengthStr = el.Value;
+                    else if (el.Key == "policyType") policyTypeStr = el.Value;
+                    else if (!attributes.ContainsKey(el.Key)) attributes.Add(el.Key, el.Value);
                 }
                 if (string.IsNullOrEmpty(type)) type = item.Key.ToLowerInvariant();
                 
@@ -205,12 +248,18 @@ namespace Polly.Configuration
                             policy = ProcessCircuitBreaker(exceptionsAllowedBeforeBreakingStr, durationOfBreakInSecondsStr, durationOfBreakInMillisecondsStr, policy, key);
                         }
                         break;
+                    case "latency":
+                        policy = ProcessLatency(timeInMillisecondsStr, numberOfBucketsStr, bucketDataLengthStr, policy, key);
+                        break;
                     case "custom":
-                        throw new NotImplementedException();
+                        if (policy == null) throw new NullReferenceException("The policy items cannot start with a custom policy type");
+                        policy = ProcessCustom(policyTypeStr, attributes, policy, key);
+                        break;
                     default:
                         throw new InvalidOperationException(); //TODO: Invalid Policy Type Exception
                 }
             }
+            if (policy != null) return policy.WithPolicyKey(key);
             return policy;
         }
 
@@ -534,7 +583,7 @@ namespace Polly.Configuration
                     float value;
                     if (float.TryParse(valueStr, out value))
                     {
-                        return policy.Fallback<float>(value);
+                        return policy.Fallback<float>(() => value);
                     }
                 }
                 else if (valueType == "decimal")
@@ -575,6 +624,39 @@ namespace Polly.Configuration
                 }
             }
             throw new NullReferenceException($"retryCount is missing for retry policy item {key}");
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        private static Policy ProcessLatency(string timeInMillisecondsStr, string numberOfBucketsStr, string bucketDataLengthStr, Policy policy, string key)
+        {
+            int timeInMilliseconds;
+            int numberOfBuckets;
+            int bucketDataLength;
+            if (!int.TryParse(timeInMillisecondsStr, out timeInMilliseconds)) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {key}");
+            if (!int.TryParse(numberOfBucketsStr, out numberOfBuckets)) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {key}");
+            if (!int.TryParse(bucketDataLengthStr, out bucketDataLength)) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {key}");
+            if (policy == null) return Policy.Latency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
+            return policy.ThenLatency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        private static Policy ProcessCustom(string policyTypeStr, IDictionary<string, string> attributes, Policy policy, string key)
+        {
+            if (string.IsNullOrEmpty(policyTypeStr)) throw new NullReferenceException($"policyType is missing for custom policy item {key}");
+            var policyType = Type.GetType(policyTypeStr);
+            return policy.Wrap((Policy)Activator.CreateInstance(policyType, new object[] { attributes }));
         }
 
 #endif
