@@ -9,6 +9,7 @@
     <Import_RootNamespace>Polly.Config.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IFallbackValueProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolicyElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolicyElementCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PolicyItemElement.cs" />

@@ -15,6 +15,7 @@ using Polly.Caching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 #if PORTABLE
 using Microsoft.Extensions.Configuration;
 #endif
@@ -135,7 +136,6 @@ namespace Polly.Configuration
                     else if (el.Key == "maxParallelization") maxParallelizationStr = el.Value;
                     else if (el.Key == "maxQueuedActions") maxQueuedActionsStr = el.Value;
                     else if (el.Key == "cacheProvider") cacheProviderStr = el.Value;
-                    
                 }
                 if (string.IsNullOrEmpty(type)) type = item.Key.ToLowerInvariant();
 
@@ -181,6 +181,7 @@ namespace Polly.Configuration
                 string timeInMillisecondsStr = null;
                 string numberOfBucketsStr = null;
                 string bucketDataLengthStr = null;
+                string valueProviderStr = null;
                 var attributes = new Dictionary<string, string>();
                 foreach (var el in item.GetChildren())
                 {
@@ -193,6 +194,7 @@ namespace Polly.Configuration
                     else if (el.Key == "maxQueuedActions") maxQueuedActionsStr = el.Value;
                     else if (el.Key == "value") valueStr = el.Value;
                     else if (el.Key == "valueType") valueType = el.Value;
+                    else if (el.Key == "valueProviderType") valueProviderStr = el.Value;
                     else if (el.Key == "cacheProvider") cacheProviderStr = el.Value;
                     else if (el.Key == "exceptionsAllowedBeforeBreaking") exceptionsAllowedBeforeBreakingStr = el.Value;
                     else if (el.Key == "durationOfBreakInSeconds") durationOfBreakInSecondsStr = el.Value;
@@ -205,6 +207,7 @@ namespace Polly.Configuration
                     else if (el.Key == "numberOfBuckets") numberOfBucketsStr = el.Value;
                     else if (el.Key == "bucketDataLength") bucketDataLengthStr = el.Value;
                     else if (el.Key == "policyType") policyTypeStr = el.Value;
+                    else if (el.Key == "order") continue;
                     else if (!attributes.ContainsKey(el.Key)) attributes.Add(el.Key, el.Value);
                 }
                 if (string.IsNullOrEmpty(type)) type = item.Key.ToLowerInvariant();
@@ -227,7 +230,7 @@ namespace Polly.Configuration
                         break;
                     case "fallback":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with fallback type");
-                        policy = ProcessFallback(valueStr, valueType, policy, key);
+                        policy = ProcessFallback(valueStr, valueType, valueProviderStr, attributes, policy, key);
                         break;
                     case "retry":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with retry type");
@@ -552,16 +555,37 @@ namespace Polly.Configuration
             throw new TypeLoadException($"Type {cachingProviderStr} cannot be resolved");
         }
 
-        private static Policy ProcessFallback(string valueStr, string valueType, Policy policy, string key)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="valueStr"></param>
+        /// <param name="valueType"></param>
+        /// <param name="valueProviderStr"></param>
+        /// <param name="policy"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static Policy ProcessFallback(string valueStr, string valueType, string valueProviderStr, IDictionary<string, string> attributes, Policy policy, string key)
         {
-            if (string.IsNullOrEmpty(valueStr)) throw new NullReferenceException($"value is missing for fallback policy item {key}");
-            if (!string.IsNullOrEmpty(valueStr))
+            if (string.IsNullOrEmpty(valueStr))
+            {
+                var valueProviderType = Type.GetType(valueProviderStr);
+                if (valueProviderType == null) throw new NullReferenceException($"value is missing for fallback policy item {key}");
+                var contructor = valueProviderType.GetTypeInfo().DeclaredConstructors.OrderByDescending(x => x.GetParameters().Count()).FirstOrDefault();
+                IFallbackValueProvider provider = null;
+                if (contructor == null) provider = (IFallbackValueProvider)Activator.CreateInstance(valueProviderType);
+                else
+                {
+                    var count = contructor.GetParameters().Count();
+                    provider  = count == 0 ? (IFallbackValueProvider)Activator.CreateInstance(valueProviderType) : (IFallbackValueProvider)Activator.CreateInstance(valueProviderType, new object[] { attributes });
+                }
+                return policy.Fallback(provider.ExecuteAsync);
+            }
+            else 
             {
                 if (valueStr.Equals("null", StringComparison.OrdinalIgnoreCase))
                 {
                     return policy.Fallback<object>(() => null);
                 }
-        
                 if (valueType == "int")
                 {
                     int value;
