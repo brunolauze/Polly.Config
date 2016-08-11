@@ -49,7 +49,8 @@ var snkFile = srcDir + File(keyName);
 var projectToNugetFolderMap = new Dictionary<string, string[]>() {
     { "Net40", new [] {"net40"} },
     { "Net45", new [] {"net45"} },
-    { "Pcl"  , new [] {"portable-net45+netcore45+wpa81+wp8", "dotnet"} }
+    { "Pcl"  , new [] {"portable-net45+netcore45+wpa81+wp8"} },
+    { "Core"  , new [] {"dotnet"} }
 };
 
 var net40AsyncProjectToNugetFolderMap = new Dictionary<string, string[]>() {
