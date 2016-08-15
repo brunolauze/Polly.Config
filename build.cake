@@ -49,8 +49,7 @@ var snkFile = srcDir + File(keyName);
 var projectToNugetFolderMap = new Dictionary<string, string[]>() {
     { "Net40", new [] {"net40"} },
     { "Net45", new [] {"net45"} },
-    { "Pcl"  , new [] {"portable-net45+netcore45+wpa81+wp8"} },
-    { "Core"  , new [] {"dotnet"} }
+    { "Pcl"  , new [] {"portable45-net45+win8+wp8+wpa81", "net461", "netstandard1.6"} }
 };
 
 var net40AsyncProjectToNugetFolderMap = new Dictionary<string, string[]>() {
@@ -177,10 +176,11 @@ Task("__CopyOutputToNugetFolder")
         var sourceDir = srcDir + Directory(projectName + "." + project) + Directory("bin") + Directory(configuration);
 
         foreach(var targetFolder in projectToNugetFolderMap[project]) {
+			var srcDirCopy = project == "Pcl" ? sourceDir + Directory(targetFolder) : sourceDir;
             var destDir = buildDir + Directory("lib") + Directory(targetFolder);
 
-            Information("Copying {0} -> {1}.", sourceDir, destDir);
-            CopyDirectory(sourceDir, destDir);
+            Information("Copying {0} -> {1}.", srcDirCopy, destDir);
+            CopyDirectory(srcDirCopy, destDir);
        }
     }
 

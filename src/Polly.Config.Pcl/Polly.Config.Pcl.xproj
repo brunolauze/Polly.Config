@@ -7,11 +7,11 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>cdc759ec-3dd6-47a8-b0e2-85dcb27c2531</ProjectGuid>
-    <RootNamespace>Polly.Config.Core</RootNamespace>
+    <ProjectGuid>81e97287-f48c-4ae9-9396-a4ea6b219fb9</ProjectGuid>
+    <RootNamespace>Polly.Config.Pcl</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -38,6 +38,18 @@ namespace Polly.Configuration
                 return (PolicyElementCollection)base[""];
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [use metrics].
+        /// </summary>
+        /// <value><c>true</c> if [use metrics]; otherwise, <c>false</c>.</value>
+        [ConfigurationProperty("useMetrics", IsRequired = false, DefaultValue = false)]
+        public bool UseMetrics
+        {
+            get { return (bool)base["useMetrics"]; }
+            set { base["useMetrics"] = value; }
+        }
+
     }
 }
 #endif

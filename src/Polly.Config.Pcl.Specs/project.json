@@ -1,0 +1,28 @@
+﻿{
+  "buildOptions": {
+    "outputName": "Polly.Config.Specs",
+    "debugType": "portable",
+    "define": [ "SUPPORTS_ASYNC", "PORTABLE" ],
+    "compile": [ "../Polly.Config.SharedSpecs/**/*.cs" ]
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Polly-Signed": "5.0.0",
+    "Polly.Metrics-Signed": "5.0.0",
+    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
+    "Polly.Config.Pcl": "5.0.0-*",
+    "xunit": "2.2.0-beta2-build3300",
+    "FluentAssertions": "4.13.0"
+  },
+  "frameworks": {
+    "net461": {}
+  },
+  "runtimes": {
+    "win81-x64": {},
+    "win8-x64": {},
+    "win7-x64": {}
+  },
+  "testRunner": "xunit",
+  "version": "5.0.0-*"
+}

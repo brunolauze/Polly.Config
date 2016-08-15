@@ -45,7 +45,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Polly.Net40Async, Version=5.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Polly.Net40Async-Signed.5.0.0\lib\net40\Polly.Net40Async.dll</HintPath>
+      <HintPath>..\packages\Polly.Metrics.Net40Async-Signed.5.0.0\lib\net40\Polly.Net40Async.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

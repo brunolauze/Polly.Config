@@ -31,8 +31,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Polly, Version=5.0.0.0, Culture=neutral, PublicKeyToken=c8a3ffc3f8f825cc, processorArchitecture=MSIL">
-      <HintPath>..\packages\Polly-Signed.5.0.0\lib\net45\Polly.dll</HintPath>
+      <HintPath>..\packages\Polly.Metrics-Signed.5.0.0\lib\net45\Polly.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Polly.Metrics">
+      <HintPath>..\packages\Polly.Metrics-Signed.5.0.0\lib\net45\Polly.Metrics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

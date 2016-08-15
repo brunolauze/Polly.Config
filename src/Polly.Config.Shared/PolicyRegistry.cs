@@ -12,6 +12,7 @@
 // <summary></summary>
 // ***********************************************************************
 using Polly.Caching;
+using Polly.Metrics;
 using System;
 using System.Collections.Generic;
 #if !PORTABLE
@@ -50,7 +51,8 @@ namespace Polly.Configuration
                     if (policyDef.Key.Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
                         var policy = CreatePolicy(policyDef);
-                        lock(_lock)
+                        if (section.UseMetrics) policy = policy.UseMetrics();
+                        lock (_lock)
                         {
                             if (!_policies.ContainsKey(name))
                             {
@@ -79,6 +81,7 @@ namespace Polly.Configuration
                     if (!_policies.ContainsKey(policyDef.Key))
                     {
                         var policy = CreatePolicy(policyDef);
+                        if (section.UseMetrics) policy = policy.UseMetrics();
                         lock(_lock)
                         {
                             if (!_policies.ContainsKey(policyDef.Key))
@@ -146,6 +149,7 @@ namespace Polly.Configuration
                         policy = ProcessCaching(item, policy);
                         break;
                     case "latency":
+                    if (policy == null) throw new NullReferenceException("The policy items cannot start with latency type");
                         policy = ProcessLatency(item, policy);
                         break;
                     case "custom":
@@ -178,7 +182,6 @@ namespace Polly.Configuration
             if (!int.TryParse(timeInMillisecondsStr, out timeInMilliseconds)) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {item.Key}");
             if (!int.TryParse(numberOfBucketsStr, out numberOfBuckets)) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {item.Key}");
             if (!int.TryParse(bucketDataLengthStr, out bucketDataLength)) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {item.Key}");
-            if (policy == null) return Policy.Latency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
             return policy.ThenLatency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
         }
 

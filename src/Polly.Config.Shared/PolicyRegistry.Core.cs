@@ -12,6 +12,7 @@
 // <summary></summary>
 // ***********************************************************************
 using Polly.Caching;
+using Polly.Metrics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -115,6 +116,7 @@ namespace Polly.Configuration
         private static Policy CreatePolicy(Microsoft.Extensions.Configuration.IConfigurationSection policySection, string key)
         {
             Policy policy                                              = null;
+            var useMetrics = false;
             var sections = policySection.GetChildren().OrderBy(GetOrder);
             foreach (var item in sections)
             {
@@ -154,6 +156,9 @@ namespace Polly.Configuration
                         break;
                     case "caching":
                         policy = ProcessCaching(cacheProviderStr, policy, key);
+                        break;
+                    case "metrics":
+                        useMetrics = true;
                         break;
                 }
             }
@@ -217,14 +222,11 @@ namespace Polly.Configuration
                 switch(type)
                 {
                     case "handle":
-                        break;
                     case "handleresult":
-                        break;
                     case "timeout":
-                        break;
                     case "throttle":
-                        break;
                     case "caching":
+                    case "metrics":
                         break;
                     case "thenhandle":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with thenhandle type");
@@ -254,6 +256,7 @@ namespace Polly.Configuration
                         }
                         break;
                     case "latency":
+                        if (policy == null) throw new NullReferenceException("The policy items cannot start with latency type");
                         policy = ProcessLatency(timeInMillisecondsStr, numberOfBucketsStr, bucketDataLengthStr, policy, key);
                         break;
                     case "custom":
@@ -264,8 +267,9 @@ namespace Polly.Configuration
                         throw new InvalidOperationException(); //TODO: Invalid Policy Type Exception
                 }
             }
-            if (policy != null) return policy.WithPolicyKey(key);
-            return policy;
+            if (policy == null) throw new NullReferenceException("The policy does not contain any policy definitions");
+            policy = policy.WithPolicyKey(key);
+            return useMetrics ? policy.UseMetrics() : policy;
         }
 
         /// <summary>
@@ -680,7 +684,6 @@ namespace Polly.Configuration
             if (!int.TryParse(timeInMillisecondsStr, out timeInMilliseconds)) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {key}");
             if (!int.TryParse(numberOfBucketsStr, out numberOfBuckets)) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {key}");
             if (!int.TryParse(bucketDataLengthStr, out bucketDataLength)) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {key}");
-            if (policy == null) return Policy.Latency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
             return policy.ThenLatency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
         }
 
