@@ -230,6 +230,7 @@ namespace Polly.Configuration
                     case "throttle":
                     case "caching":
                     case "metrics":
+                        // Extract Sampling Duration
                         break;
                     case "thenhandle":
                         if (policy == null) throw new NullReferenceException("The policy items cannot start with thenhandle type");
@@ -272,7 +273,7 @@ namespace Polly.Configuration
             }
             if (policy == null) throw new NullReferenceException("The policy does not contain any policy definitions");
             policy = policy.WithPolicyKey(key);
-            return useMetrics ? policy.UseMetrics() : policy;
+            return useMetrics ? policy.UseMetrics(TimeSpan.FromMinutes(2), 12) : policy;
         }
 
         /// <summary>
