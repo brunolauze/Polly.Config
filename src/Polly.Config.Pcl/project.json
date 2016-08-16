@@ -9,6 +9,7 @@
   },
   "buildOptions": {
     "outputName": "Polly.Config",
+    "copyToOutput":  [ "./Polly.pdb", "./Polly.Metrics.pdb" ],
     "define": [ "SUPPORTS_ASYNC", "PORTABLE" ],
     "compile": [ "../Polly.Config.Shared/**/*.cs" ]
   },
