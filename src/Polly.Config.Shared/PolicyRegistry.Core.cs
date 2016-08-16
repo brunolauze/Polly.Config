@@ -78,7 +78,10 @@ namespace Polly.Configuration
                         var policy = CreatePolicy(item, item.Key);
                         lock(_lock)
                         {
-                            _policies.Add(name, policy);
+                            if (!_policies.ContainsKey(name)) 
+                            {
+                                _policies.Add(name, policy);
+                            }
                         }
                         return policy;
                     }
