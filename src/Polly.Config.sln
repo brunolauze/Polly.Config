@@ -24,6 +24,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Polly.Config.Pcl", "Polly.C
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Polly.Config.Pcl.Specs", "Polly.Config.Pcl.Specs\Polly.Config.Pcl.Specs.xproj", "{B8FCC818-BF1F-41DC-A6A0-D61E0A488629}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Polly.Config.Demo", "Polly.Config.Demo\Polly.Config.Demo.xproj", "{347D37F4-8514-43D1-9B4E-2995BCE277CE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Polly.Config.Shared\Polly.Config.Shared.projitems*{097b6ce3-84c0-4a85-91ca-a721bb233803}*SharedItemsImports = 4
@@ -56,6 +58,10 @@ Global
 		{B8FCC818-BF1F-41DC-A6A0-D61E0A488629}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8FCC818-BF1F-41DC-A6A0-D61E0A488629}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8FCC818-BF1F-41DC-A6A0-D61E0A488629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{347D37F4-8514-43D1-9B4E-2995BCE277CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{347D37F4-8514-43D1-9B4E-2995BCE277CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{347D37F4-8514-43D1-9B4E-2995BCE277CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{347D37F4-8514-43D1-9B4E-2995BCE277CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

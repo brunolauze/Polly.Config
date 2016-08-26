@@ -9,13 +9,26 @@
   },
   "buildOptions": {
     "outputName": "Polly.Config",
-    "copyToOutput":  [ "./Polly.pdb", "./Polly.Metrics.pdb" ],
     "define": [ "SUPPORTS_ASYNC", "PORTABLE" ],
     "compile": [ "../Polly.Config.Shared/**/*.cs" ]
   },
   "frameworks": {
-    ".NETPortable,Version=v4.5,Profile=Profile259": {},
+    ".NETPortable,Version=v4.5,Profile=Profile259": {
+      "dependencies": {
+        "System.ComponentModel": "4.0.1"
+      },
+      "buildOptions": {
+        "define": ["DOTNET"]
+      }
+    },
     "net461": {},
-    "netstandard1.6": { }
+    "netstandard1.6": {
+      "dependencies": {
+        "System.ComponentModel": "4.0.1"
+      },
+      "buildOptions": {
+        "define": [ "DOTNET" ]
+      }
+    }
   }
 }

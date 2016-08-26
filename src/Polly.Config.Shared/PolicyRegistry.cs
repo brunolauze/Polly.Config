@@ -94,9 +94,7 @@ namespace Polly.Configuration
             }
             return _policies.Values; // TODO: REVIEW: PolicyNotFoundException
         }
-
-
-
+        
         /// <summary>
         /// Creates the policy.
         /// </summary>
@@ -111,19 +109,15 @@ namespace Polly.Configuration
         /// or
         /// The policy items cannot start with circuitbreaker type
         /// </exception>
-        private static Policy CreatePolicy(PolicyElement policyDef)
+        private static PolicyBuilder CreatePolicy(PolicyElement policyDef)
         {
-            Policy policy = null;
+            PolicyBuilder policy = null;
             foreach(PolicyItemElement item in policyDef.PolicyItems)
             {
                 switch(item.Type)
                 {
                     case "handle":
                         policy = ProcessHandle(item, policy);
-                        break;
-                    case "thenhandle":
-                        if (policy == null) throw new NullReferenceException("The policy items cannot start with thenhandle type");
-                        policy = ProcessThenHandle(item, policy);
                         break;
                     case "handleresult":
                         break;
@@ -168,7 +162,7 @@ namespace Polly.Configuration
         /// <param name="item"></param>
         /// <param name="policy"></param>
         /// <returns></returns>
-        private static Policy ProcessLatency(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessLatency(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("timeInMilliseconds")) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {item.Key}");
             if (!item.Attributes.ContainsKey("numberOfBuckets")) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {item.Key}");
@@ -182,7 +176,7 @@ namespace Polly.Configuration
             if (!int.TryParse(timeInMillisecondsStr, out timeInMilliseconds)) throw new NullReferenceException($"timeInMilliseconds is missing for latency policy item {item.Key}");
             if (!int.TryParse(numberOfBucketsStr, out numberOfBuckets)) throw new NullReferenceException($"numberOfBuckets is missing for latency policy item {item.Key}");
             if (!int.TryParse(bucketDataLengthStr, out bucketDataLength)) throw new NullReferenceException($"bucketDataLength is missing for latency policy item {item.Key}");
-            return policy.ThenLatency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
+            return policy.Latency(timeInMilliseconds, numberOfBuckets, bucketDataLength);
         }
 
         /// <summary>
@@ -191,11 +185,12 @@ namespace Polly.Configuration
         /// <param name="item"></param>
         /// <param name="policy"></param>
         /// <returns></returns>
-        private static Policy ProcessCustom(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessCustom(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("policyType")) throw new NullReferenceException($"policyType is missing for custom policy item {item.Key}");
             var policyType = Type.GetType(item.Attributes["policyType"]);
-            return policy.Wrap((Policy)Activator.CreateInstance(policyType, new object[] { item.Attributes }));
+            //return policy.Wrap((Policy)Activator.CreateInstance(policyType, new object[] { item.Attributes }));
+            return policy;
         }
 
         /// <summary>
@@ -210,7 +205,7 @@ namespace Polly.Configuration
             /// </summary>
             /// <param name="policy">The policy.</param>
             /// <returns>Policy.</returns>
-            public Policy Handle(Policy policy)
+            public PolicyBuilder Handle(PolicyBuilder policy)
             {
                 return AddException(policy);
             }
@@ -220,41 +215,12 @@ namespace Polly.Configuration
             /// </summary>
             /// <param name="policy">The policy.</param>
             /// <returns>Policy.</returns>
-            private Policy AddException(Policy policy)
+            private PolicyBuilder AddException(PolicyBuilder policy)
             {
                 if (policy == null) return Policy.Handle<TException>();
                 else return policy.Or<TException>();
             }
         }
-
-        /// <summary>
-        /// Class ThenExceptionPolicyWrapper.
-        /// </summary>
-        /// <typeparam name="TException"></typeparam>
-        internal class ThenExceptionPolicyWrapper<TException> : IPolicyWrapper
-            where TException : Exception
-        {
-            /// <summary>
-            /// Executes the specified policy.
-            /// </summary>
-            /// <param name="policy">The policy.</param>
-            /// <returns>Policy.</returns>
-            public Policy Handle(Policy policy)
-            {
-                return AddException(policy);
-            }
-
-            /// <summary>
-            /// Adds the exception.
-            /// </summary>
-            /// <param name="policy">The policy.</param>
-            /// <returns>Policy.</returns>
-            private Policy AddException(Policy policy)
-            {
-                return policy.ThenHandle<TException>();
-            }
-        }
-
 
         /// <summary>
         /// Interface IPolicyWrapper
@@ -266,7 +232,7 @@ namespace Polly.Configuration
             /// </summary>
             /// <param name="policy">The policy.</param>
             /// <returns>Policy.</returns>
-            Policy Handle(Policy policy);
+            PolicyBuilder Handle(PolicyBuilder policy);
         }
         
         /// <summary>
@@ -277,7 +243,7 @@ namespace Polly.Configuration
         /// <returns>Policy.</returns>
         /// <exception cref="System.NullReferenceException">$exceptionType is missing for handle policy item {item.Key}</exception>
         /// <exception cref="System.TypeLoadException">Type {exceptionTypeStr} cannot be resolved</exception>
-        private static Policy ProcessHandle(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessHandle(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("exceptionType")) throw new NullReferenceException($"exceptionType is missing for handle policy item {item.Key}");
             var exceptionTypeStr = item.Attributes["exceptionType"];
@@ -288,29 +254,7 @@ namespace Polly.Configuration
             }
             throw new TypeLoadException($"Type {exceptionTypeStr} cannot be resolved");
         }
-
-
-        /// <summary>
-        /// Processes the handle.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="policy">The policy.</param>
-        /// <returns>Policy.</returns>
-        /// <exception cref="System.NullReferenceException">$exceptionType is missing for handle policy item {item.Key}</exception>
-        /// <exception cref="System.TypeLoadException">Type {exceptionTypeStr} cannot be resolved</exception>
-        private static Policy ProcessThenHandle(PolicyItemElement item, Policy policy)
-        {
-            if (!item.Attributes.ContainsKey("exceptionType")) throw new NullReferenceException($"exceptionType is missing for handle policy item {item.Key}");
-            var exceptionTypeStr = item.Attributes["exceptionType"];
-            var type = Type.GetType(exceptionTypeStr);
-            if (type != null)
-            {
-                return ((IPolicyWrapper)Activator.CreateInstance(typeof(ThenExceptionPolicyWrapper<>).MakeGenericType(type))).Handle(policy);
-            }
-            throw new TypeLoadException($"Type {exceptionTypeStr} cannot be resolved");
-        }
-
-
+        
         /// <summary>
         /// Processes the timeout.
         /// </summary>
@@ -318,7 +262,7 @@ namespace Polly.Configuration
         /// <param name="policy">The policy.</param>
         /// <returns>Policy.</returns>
         /// <exception cref="System.NullReferenceException">$timeoutInMilliseconds or timeoutInSeconds are missing or invalid for timeout policy item {item.Key}</exception>
-        private static Policy ProcessTimeout(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessTimeout(PolicyItemElement item, PolicyBuilder policy)
         {
             TimeSpan timeout = default(TimeSpan);
             var timeoutFound = false;
@@ -347,7 +291,7 @@ namespace Polly.Configuration
                 throw new NullReferenceException($"timeoutInMilliseconds or timeoutInSeconds are missing or invalid for timeout policy item {item.Key}");
             }
             if (policy == null) return Policy.Timeout(timeout);
-            return policy.ThenTimeout(timeout);
+            return policy.Timeout(timeout);
         }
 
         /// <summary>
@@ -357,7 +301,7 @@ namespace Polly.Configuration
         /// <param name="policy">The policy.</param>
         /// <returns>Policy.</returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        private static Policy ProcessThrottle(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessThrottle(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("maxParallelization")) throw new NullReferenceException($"maxParallelization is missing for throttle policy item {item.Key}");
             var maxParallelizationStr = item.Attributes["maxParallelization"];
@@ -373,11 +317,11 @@ namespace Polly.Configuration
                         if (int.TryParse(maxQueuedActionsStr, out maxQueuedActions))
                         {
                             if (policy == null) return Policy.Throttle(maxParallelization, maxQueuedActions);
-                            return policy.ThenThrottle(maxParallelization, maxQueuedActions);
+                            return policy.Throttle(maxParallelization, maxQueuedActions);
                         }
                     }
                     if (policy == null) return Policy.Throttle(maxParallelization);
-                    return policy.ThenThrottle(maxParallelization);
+                    return policy.Throttle(maxParallelization);
                 }
             }
             throw new NullReferenceException($"retryCount is missing for retry policy item {item.Key}");
@@ -390,7 +334,7 @@ namespace Polly.Configuration
         /// <param name="policy"></param>
         /// <returns></returns>
 
-        private static Policy ProcessCircuitBreaker(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessCircuitBreaker(PolicyItemElement item, PolicyBuilder policy)
         {
             throw new NotImplementedException();
         }
@@ -407,7 +351,7 @@ namespace Polly.Configuration
         /// $cachingProvider is missing for handle policy item {item.Key}
         /// </exception>
         /// <exception cref="System.TypeLoadException">$Type {cachingProviderStr} cannot be resolved</exception>
-        private static Policy ProcessCaching(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessCaching(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("cachingProvider")) throw new NullReferenceException($"cachingProvider is missing for handle policy item {item.Key}");
             var cachingProviderStr = item.Attributes["cachingProvider"];
@@ -415,7 +359,7 @@ namespace Polly.Configuration
             if (cachingProviderStr.Equals("memory", StringComparison.OrdinalIgnoreCase))
             {
                 if (policy == null) return Policy.Cache();
-                return policy.ThenCache();
+                return policy.Cache();
             }
             var type = Type.GetType(cachingProviderStr);
             if (type != null)
@@ -423,7 +367,7 @@ namespace Polly.Configuration
                 var cacheProvider = (IResultCacheProvider)Activator.CreateInstance(type);
 
                 if (policy == null) return Policy.Cache(cacheProvider);
-                return policy.ThenCache(cacheProvider);
+                return policy.Cache(cacheProvider);
             }
             throw new TypeLoadException($"Type {cachingProviderStr} cannot be resolved");
         }
@@ -437,7 +381,7 @@ namespace Polly.Configuration
         /// <param name="policy">The policy.</param>
         /// <returns>Policy.</returns>
         /// <exception cref="System.NullReferenceException">$retryCount is missing for handle policy item {item.Key}</exception>
-        private static Policy ProcessRetry(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessRetry(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("retryCount")) throw new NullReferenceException($"retryCount is missing for retry policy item {item.Key}");
             var retryCountStr = item.Attributes["retryCount"];
@@ -458,7 +402,7 @@ namespace Polly.Configuration
 
 
 
-        private static Policy ProcessFallback(PolicyItemElement item, Policy policy)
+        private static PolicyBuilder ProcessFallback(PolicyItemElement item, PolicyBuilder policy)
         {
             if (!item.Attributes.ContainsKey("value")) throw new NullReferenceException($"value is missing for fallback policy item {item.Key}");
             var valueStr = item.Attributes["value"];

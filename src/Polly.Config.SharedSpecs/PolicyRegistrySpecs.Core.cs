@@ -40,7 +40,8 @@ namespace Polly.Configuration.Specs
         {
             string name = null;
             IConfigurationRoot configuration = null;
-            Action action = () => { PolicyRegistry.Resolve(name, configuration); };
+            IServiceProvider serviceProvider = null;
+            Action action = () => { PolicyRegistry.Resolve(name, configuration, serviceProvider); };
             action.ShouldThrow<ArgumentNullException>().And
                   .ParamName.Should().Be("name");
         }
@@ -49,10 +50,11 @@ namespace Polly.Configuration.Specs
         public void Should_throw_when_configuration_source_is_null()
         {
             string name = "name";
-            IConfigurationRoot configuration = null;
-            Action action = () => { PolicyRegistry.Resolve(name, configuration); };
+            IConfigurationRoot section = null;
+            IServiceProvider serviceProvider = null;
+            Action action = () => { PolicyRegistry.Resolve(name, section, serviceProvider); };
             action.ShouldThrow<ArgumentNullException>().And
-                  .ParamName.Should().Be("configuration");
+                  .ParamName.Should().Be("section");
         }
 
         [Fact]
@@ -89,9 +91,9 @@ namespace Polly.Configuration.Specs
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             IConfigurationRoot configuration = configurationBuilder.Build();
+            IServiceProvider serviceProvider = null;
 
-
-            var actual = PolicyRegistry.Resolve(name, configuration);
+            var actual = PolicyRegistry.Resolve(name, configuration, serviceProvider);
             actual.GetType().Name.Should().Be("FallbackPolicy");
 
             var actualValueTask = actual.ExecuteAsync<string>(() => { throw new InvalidOperationException(); });
@@ -130,9 +132,8 @@ namespace Polly.Configuration.Specs
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             IConfigurationRoot configuration = configurationBuilder.Build();
-
-
-            var actual = PolicyRegistry.Resolve(name, configuration);
+            IServiceProvider serviceProvider = null;
+            var actual = PolicyRegistry.Resolve(name, configuration, serviceProvider);
             actual.GetType().Name.Should().Be("RetryPolicy");
         }
 
@@ -170,9 +171,9 @@ namespace Polly.Configuration.Specs
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             IConfigurationRoot configuration = configurationBuilder.Build();
+            IServiceProvider serviceProvider = null;
 
-
-            var actual = PolicyRegistry.Resolve(name, configuration);
+            var actual = PolicyRegistry.Resolve(name, configuration, serviceProvider);
             actual.GetType().Name.Should().Be("CircuitBreakerPolicy");
             actual.AsCircuitBreaker().CircuitState.Should().Be(CircuitBreaker.CircuitState.Closed);
         }
